@@ -7,51 +7,53 @@ SamsungData <- function()
      {
           download.file(url,destfile = "getdata-projectfiles-UCI_HAR_Dataset.zip")
      }
-     unzip("getdata-projectfiles-UCI_HAR_Dataset.zip") # Unzipping contents from Samsung Data
-
-#####################################################################################
-##################### Merging Training and Test Data ################################
-#####################################################################################
-     
-     setwd(list.dirs()[3])                             # Accessing Test Folder and data
+     if(!file.exists("UCI HAR Dataset")){
+          unzip("getdata-projectfiles-UCI_HAR_Dataset.zip") # Unzipping contents from Samsung Data
+     }
+     #####################################################################################
+     ##################### Merging Training and Test Data ################################
+     #####################################################################################
+     setwd(base)
+     setwd("./UCI HAR Dataset/test")                             # Accessing Test Folder and data
      smartdatatest <- read.table("X_test.txt")         # Reading test data
      smartdatatest[,562] <- read.table("y_test.txt")   # Adding columns for activity identifier
      smartdatatest[,563] <- read.table("subject_test.txt") # Adding column for subject identifier
-     setwd(base)                                       # Accessing base folder and reading features for assigning column names
-     setwd(list.dirs()[2])
+     setwd(base)
+     setwd("./UCI HAR Dataset")
      colnames(smartdatatest) <- make.names(read.table("features.txt")[,2])
      
      setwd(base)
-     setwd(list.dirs()[5])                             # Accessing train Folder and data
+     setwd("./UCI HAR Dataset/train")                             # Accessing train Folder and data
      smartdatatrain <- read.table("X_train.txt")       # Reading train data
      smartdatatrain[,562] <- read.table("y_train.txt") # Adding columns for activity identifier
      smartdatatrain[,563] <- read.table("subject_train.txt") # Adding column for subject identifier
-     setwd(base)                                       # Accessing base folder and reading features for assigning column names
-     setwd(list.dirs()[2])
+     
+     setwd(base)
+     setwd("./UCI HAR Dataset")
      colnames(smartdatatrain) <- make.names(read.table("features.txt")[,2])
      
      smartdata <- rbind.data.frame(smartdatatest,smartdatatrain,deparse.level = 1) # Binding Test and Training Data together
      
-##################################################################################################
-##################### Subsetting Mean and Standard Deviation data ################################
-##################################################################################################
+     ##################################################################################################
+     ##################### Subsetting Mean and Standard Deviation data ################################
+     ##################################################################################################
      
      smartdatamean <- smartdata[,c(grepl(".mean..",colnames(smartdata),ignore.case = FALSE))]
      smartdatastd <- smartdata[,c(grepl(".std..",colnames(smartdata),ignore.case = FALSE))]
      smartdata1 <- cbind(smartdatamean,smartdatastd)                  # Size of matrix with mean and std is 79
      smartdata1 <- cbind(smartdata1,smartdata[,562],smartdata[,563])  # Adding Identifier columns from smartdata
- 
-###################################################################################################
-##################### Adding Appropriate names for activity column ################################
-###################################################################################################    
+     
+     ###################################################################################################
+     ##################### Adding Appropriate names for activity column ################################
+     ###################################################################################################    
      
      library(plyr)
      smartdata1$`smartdata[, 562]`=as.factor(smartdata1$`smartdata[, 562]`)
      smartdata1$`smartdata[, 562]`<- revalue((smartdata1$`smartdata[, 562]`),c("1"="WALKING","2"="WALKING_UPSTAIRS","3"="WALKING_DOWNSTAIRS","4"="SITTING","5"="STANDING","6"="LAYING"))
-
-##############################################################################################
-##################### Finding Average of individual variables ################################
-##############################################################################################          
+     
+     ##############################################################################################
+     ##################### Finding Average of individual variables ################################
+     ##############################################################################################          
      
      splitsmart <- split(smartdata1,smartdata1$`smartdata[, 563]`)         # Splitting smartdata by subject
      actlist <- as.character(read.table("activity_labels.txt")[,2])        # Reading activity names
